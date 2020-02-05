@@ -23,8 +23,10 @@ namespace MonitorApi.Services
             {
                 InMemoryDatabase.AppointmentsConflicts.Add(new AppointmentsConflictModel()
                 {
+                    ConflictID = Guid.NewGuid().ToString(),
                     Appointment1ID = appointment.AppointmentID,
-                    Appointment2ID = foundAppointment.AppointmentID
+                    Appointment2ID = foundAppointment.AppointmentID,
+                    ConflictDateTime = DateTime.Now,
                 });
                 return await Task.FromResult(foundAppointment);
             }
