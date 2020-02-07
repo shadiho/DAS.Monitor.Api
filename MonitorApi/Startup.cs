@@ -1,6 +1,8 @@
 using DASInMemoryDatabase;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,10 +35,17 @@ namespace MonitorApi
             services.AddTransient<IConflictsManager, ConflictManager>();
 
 
+
+            //services.AddCors();
+
+            services.AddCors(options => {
+                options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+
             //services.AddSingleton(provider => GetScheduler().Result);
             services.AddControllers();
+            
 
-           
             // var hostBuilder = new WebHostBuilder().ConfigureServices(services =>
             //services.AddHostedService<SQSListener>());
             //hostBuilder.UseIIS();
@@ -91,8 +100,9 @@ namespace MonitorApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(options => options.WithOrigins("http://localhost:4200"));
             app.UseRouting();
-
+            app.UseCors("AllowAll");
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -100,7 +110,14 @@ namespace MonitorApi
                 endpoints.MapControllers();
             });
 
+
+            
+
+            
+
+            //app.UsePreflightRequestHandler();
             ConfigureSQSListenerJob();
+
 
 
         }

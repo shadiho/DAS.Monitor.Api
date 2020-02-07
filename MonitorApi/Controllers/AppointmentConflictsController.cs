@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using CoreApiModels;
 using MonitorApi.Models;
 using DASInMemoryDatabase;
+using Microsoft.AspNetCore.Cors;
 
 namespace MonitorApi.Controllers
 {
+    [EnableCors("AllowAll")]
     [Route("api/v1/AppointmentConflictsController")]
     [ApiController]
     public class AppointmentConflictsController : ControllerBase

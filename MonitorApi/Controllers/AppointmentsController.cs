@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CoreApiModels;
 using DASInMemoryDatabase;
+using Microsoft.AspNetCore.Cors;
+
 namespace MonitorApi.Controllers
 {
+    [EnableCors("AllowAll")]
     [Route("api/v1/AppointmentsController")]
     [ApiController]
     public class AppointmentsController : ControllerBase
@@ -35,7 +38,23 @@ namespace MonitorApi.Controllers
                 appointments = appointments.Where((a, i) => a.CreationDateTime <= toDate).ToList();
             }
 
-            return StatusCode(201, await Task.FromResult(appointments));
+            List<AppointmentsOpLogModel> outAppointments=new List<AppointmentsOpLogModel>();
+            foreach (var appointment in appointments)
+            {
+                var outAppointment = new AppointmentsOpLogModel();
+                outAppointment.AppointmentID = appointment.AppointmentID;
+                outAppointment.CreationDateTime = appointment.CreationDateTime;
+                outAppointment.DoctorName = InMemoryDatabase.Doctors.Where(d => d.DoctorId == appointment.DoctorId).FirstOrDefault().DoctorName;
+                outAppointment.PatientName = InMemoryDatabase.Patients.Where(p => p.PatientId == appointment.PatientId).FirstOrDefault().PatientName;
+                outAppointment.Operation = "";
+                outAppointment.FromDate = appointment.FromDate;
+                outAppointment.ToDate = appointment.ToDate;
+                outAppointment.PatientID = appointment.PatientId;
+                outAppointment.DoctorID = appointment.DoctorId;
+                outAppointments.Add(outAppointment);
+            }
+
+            return StatusCode(201, await Task.FromResult(outAppointments));
         }
     }
 }

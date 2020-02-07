@@ -12,8 +12,8 @@ namespace MonitorApi.Services
     {
         public async Task<bool> AddLogEntry(AppointmentModel appointment, string op)
         {
-            string doctorName = InMemoryDatabase.Doctors.Select((d,i) => d.DoctorName).FirstOrDefault();
-            string patientName = InMemoryDatabase.Patients.Select((p,i) => p.PatientName).FirstOrDefault();
+            string doctorName = InMemoryDatabase.Doctors.Where(d => d.DoctorId == appointment.DoctorId).FirstOrDefault().DoctorName;
+            string patientName = InMemoryDatabase.Patients.Where(p => p.PatientId == appointment.PatientId).FirstOrDefault().PatientName;
             InMemoryDatabase.AppointmentsOpLog.Add(new AppointmentsOpLogModel()
             {
                 LogID = Guid.NewGuid().ToString(),
@@ -24,7 +24,9 @@ namespace MonitorApi.Services
                 ToDate = appointment.ToDate,
                 CreationDateTime = appointment.CreationDateTime,
                 Operation = op,
-                LogDateTime = DateTime.Now
+                LogDateTime = DateTime.Now,
+                DoctorID = appointment.DoctorId,
+                PatientID = appointment.PatientId
             }) ;
           
             return await Task.FromResult(true);

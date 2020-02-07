@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreApiModels;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MonitorApi.Services;
@@ -11,6 +12,7 @@ using MonitorApi.Services;
 
 namespace MonitorApi.Controllers
 {
+    [EnableCors("AllowAll")]
     [Route("api/v1/AppointmentsOpLog")]
     [ApiController]
     public class AppointmentsOpLogController : ControllerBase
