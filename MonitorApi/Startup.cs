@@ -36,8 +36,6 @@ namespace MonitorApi
 
 
 
-            //services.AddCors();
-
             services.AddCors(options => {
                 options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });

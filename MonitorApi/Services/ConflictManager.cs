@@ -9,46 +9,53 @@ namespace MonitorApi.Services
 {
     public class ConflictManager : IConflictsManager
     {
-        public async Task<AppointmentModel> CheckAndAddConflict(AppointmentModel appointment)
+        public async Task<List<AppointmentModel>> CheckAndAddConflict(AppointmentModel appointment)
         {
-            AppointmentModel foundAppointment = null;
+            List<AppointmentModel> foundDoctorConflicts = new List<AppointmentModel>();
             //conflit found if two appointments with the same doctor and their date ranges intersect
-            foundAppointment = InMemoryDatabase.Appointments.Find(
-                ap =>   appointment.DoctorId == ap.DoctorId &&
+            foundDoctorConflicts = InMemoryDatabase.Appointments.FindAll(
+                ap =>   appointment.DoctorId == ap.DoctorId && appointment.AppointmentID != ap.AppointmentID &&
                         (
-                            (appointment.FromDate > ap.FromDate && appointment.FromDate < appointment.ToDate) ||
-                            (appointment.ToDate > ap.FromDate && appointment.ToDate < appointment.ToDate)
-                        ));
-            if (foundAppointment != null)
+                            (appointment.FromDate >= ap.FromDate && appointment.FromDate <= appointment.ToDate) ||
+                            (appointment.ToDate >= ap.FromDate && appointment.ToDate <= appointment.ToDate)
+                        )).ToList();
+            if (foundDoctorConflicts.Count!=0)
             {
-                InMemoryDatabase.AppointmentsConflicts.Add(new AppointmentsConflictModel()
+                foreach (AppointmentModel app in foundDoctorConflicts)
                 {
-                    ConflictID = Guid.NewGuid().ToString(),
-                    Appointment1ID = appointment.AppointmentID,
-                    Appointment2ID = foundAppointment.AppointmentID,
-                    ConflictDateTime = DateTime.Now,
-                });
-                return await Task.FromResult(foundAppointment);
+                    InMemoryDatabase.AppointmentsConflicts.Add(new AppointmentsConflictModel()
+                    {
+                        ConflictID = Guid.NewGuid().ToString(),
+                        Appointment1ID = appointment.AppointmentID,
+                        Appointment2ID = app.AppointmentID,
+                        ConflictDateTime = DateTime.Now,
+                    });
+                }
             }
 
+            List<AppointmentModel> foundPatientConflicts = new List<AppointmentModel>();
+            foundPatientConflicts = new List<AppointmentModel>();
             //conflit found if two appointments for the same patiend and their date ranges intersect
-            foundAppointment = InMemoryDatabase.Appointments.Find(
-                ap => appointment.PatientId == ap.PatientId &&
+            foundPatientConflicts = InMemoryDatabase.Appointments.FindAll(
+                ap => appointment.PatientId == ap.PatientId && appointment.AppointmentID != ap.AppointmentID &&
                         (
-                            (appointment.FromDate > ap.FromDate && appointment.FromDate < appointment.ToDate) ||
-                            (appointment.ToDate > ap.FromDate && appointment.ToDate < appointment.ToDate)
-                        ));
-            if (foundAppointment != null)
+                            (appointment.FromDate >= ap.FromDate && appointment.FromDate <= appointment.ToDate) ||
+                            (appointment.ToDate >= ap.FromDate && appointment.ToDate <= appointment.ToDate)
+                        )).ToList();
+            if (foundPatientConflicts.Count!=0)
             {
-                InMemoryDatabase.AppointmentsConflicts.Add(new AppointmentsConflictModel()
+                foreach (AppointmentModel app in foundPatientConflicts)
                 {
-                    Appointment1ID = appointment.AppointmentID,
-                    Appointment2ID = foundAppointment.AppointmentID
-                });
-                return await Task.FromResult(foundAppointment);
+                    InMemoryDatabase.AppointmentsConflicts.Add(new AppointmentsConflictModel()
+                    {
+                        Appointment1ID = appointment.AppointmentID,
+                        Appointment2ID = app.AppointmentID
+                    });
+                }
             }
+            foundDoctorConflicts.AddRange(foundPatientConflicts);
             //return null in case conflict is not found
-            return await Task.FromResult(foundAppointment);
+            return await Task.FromResult(foundDoctorConflicts);
         }
 
         //this is used to remove all conflicts with an appointment when we cancel it

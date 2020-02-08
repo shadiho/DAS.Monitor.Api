@@ -8,7 +8,7 @@ namespace MonitorApi.Services
 {
     public interface IConflictsManager
     {
-        Task<AppointmentModel> CheckAndAddConflict(AppointmentModel appointment);
+        public Task<List<AppointmentModel>> CheckAndAddConflict(AppointmentModel appointment);
 
         Task<bool> RemoveConflicts(AppointmentModel appointment);
     }

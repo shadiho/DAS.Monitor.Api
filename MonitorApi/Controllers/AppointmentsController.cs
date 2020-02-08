@@ -15,6 +15,7 @@ namespace MonitorApi.Controllers
     [ApiController]
     public class AppointmentsController : ControllerBase
     {
+
         [HttpGet]
         [Route("GetAppointments")]
         [ProducesResponseType(200, Type = typeof(List<AppointmentModel>))]
@@ -37,6 +38,10 @@ namespace MonitorApi.Controllers
             {
                 appointments = appointments.Where((a, i) => a.CreationDateTime <= toDate).ToList();
             }
+            if (string.IsNullOrEmpty(doctorID) && string.IsNullOrEmpty(patientID))
+            {
+                appointments = appointments.ToList();
+            }
 
             List<AppointmentsOpLogModel> outAppointments=new List<AppointmentsOpLogModel>();
             foreach (var appointment in appointments)
@@ -56,5 +61,30 @@ namespace MonitorApi.Controllers
 
             return StatusCode(201, await Task.FromResult(outAppointments));
         }
+
+
+        [HttpDelete]
+        [Route("ResetApp")]
+        [ProducesResponseType(200)]
+        [EnableCors("AllowAll")]
+        public async Task<IActionResult> ResetApp()
+        {
+            InMemoryDatabase.Appointments.Clear();
+            InMemoryDatabase.AppointmentsConflicts.Clear();
+            InMemoryDatabase.AppointmentsOpLog.Clear();
+            return await Task.FromResult(new OkResult());
+        }
+
+        [HttpGet]
+        [Route("DeleteAll")]
+        public async Task<IActionResult> DeleteAll()
+        {
+            InMemoryDatabase.Appointments.Clear();
+            InMemoryDatabase.AppointmentsConflicts.Clear();
+            InMemoryDatabase.AppointmentsOpLog.Clear();
+            return await Task.FromResult(new OkResult());
+        }
     }
+
+   
 }
